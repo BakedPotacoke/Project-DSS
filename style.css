@@ -1,0 +1,118 @@
+body {
+  background: #f5f3ff;
+}
+.sidebar {
+  min-height: 100vh;
+  background: #008797 !important;
+  color: #fff;
+  width: 260px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transition: left 0.3s;
+}
+.sidebar .nav-link, .sidebar .nav-link:visited {
+  color: #fff;
+}
+.sidebar .nav-link.active {
+  background: #1EC1D4;
+  color: #fff;
+}
+.sidebar .nav-link:hover {
+  background: #1EC1D4;
+  color: #fff;
+}
+.sidebar .sidebar-header {
+  padding: 1.5rem 1rem 1rem 1.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background: #008797;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.main-content {
+  margin-left: 260px;
+  padding: 0;
+  min-height: 100vh;
+  transition: margin-left 0.3s;
+}
+.topbar {
+  background: #1EC1D4;
+  color: #fff;
+  padding: 0.75rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.breadcrumb {
+  background: none;
+  margin-bottom: 0;
+  padding: 0.75rem 2rem 0 2rem;
+}
+.card {
+  margin: 2rem;
+  box-shadow: 0 2px 8px rgba(60,60,100,0.07);
+}
+.form-label {
+  font-weight: 500;
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+.settings-icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  color: #fff;
+  cursor: pointer;
+}
+.hamburger-menu {
+  display: none !important;
+  font-size: 1.5rem;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+@media (max-width: 991.98px) {
+  .hamburger-menu {
+    display: inline-block !important;
+  }
+  .sidebar {
+    left: -260px;
+  }
+  .sidebar.show {
+    left: 0;
+  }
+  .main-content {
+    margin-left: 0;
+  }
+  .card {
+    margin: 1rem 0.5rem;
+  }
+  .topbar {
+    padding: 0.75rem 1rem;
+  }
+  .breadcrumb {
+    padding: 0.75rem 1rem 0 1rem;
+  }
+}
+@media (max-width: 575.98px) {
+  .sidebar .sidebar-header {
+    font-size: 1.1rem;
+    padding: 1rem 0.5rem 0.5rem 1rem;
+  }
+  .avatar {
+    width: 28px;
+    height: 28px;
+  }
+  .card {
+    margin: 0.5rem 0.1rem;
+  }
+}
