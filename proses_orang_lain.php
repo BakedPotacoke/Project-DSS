@@ -1,11 +1,31 @@
 <?php
-include 'koneksi.php'; // koneksi ke database
+include 'connection.php'; // koneksi ke database
 
-// Ambil bobot dari URL (GET)
+// Cegah XSS dan validasi input GET
+foreach ($_GET as $key => $value) {
+    $_GET[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+// Ambil dan validasi bobot dari URL (GET)
 $bobot_input = [];
+$valid_kriteria = [
+    'harga_makanan', 'jarak', 'waktu_tunggu',
+    'popularitas', 'kebersihan_makanan', 'variasi_makanan',
+    'kemudahan_pembayaran', 'pelengkap_makanan', 'kelengkapan_alat_makan'
+];
+
 foreach ($_GET as $key => $value) {
     if (strpos($key, 'bobot_') === 0) {
         $kriteria = substr($key, 6); // hapus 'bobot_'
+
+        if (!preg_match('/^[a-z_]+$/', $kriteria) || !in_array($kriteria, $valid_kriteria)) {
+            die("Kriteria tidak valid.");
+        }
+
+        if (!is_numeric($value) || floatval($value) < 0) {
+            die("Nilai bobot tidak valid.");
+        }
+
         $bobot_input[$kriteria] = floatval($value);
     }
 }
@@ -21,7 +41,7 @@ foreach ($bobot_input as $k => $v) {
     $bobot[$k] = $total_bobot > 0 ? $v / $total_bobot : 0;
 }
 
-// Mapping input ke kolom tabel (view_nilai_pivot)
+// Mapping input ke kolom tabel
 $kriteria_mapping = [
     'harga_makanan' => 'harga',
     'jarak' => 'jarak',
@@ -74,70 +94,78 @@ $data_normalisasi = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $data_normalisasi[] = $row;
 }
+
+// Hitung skor terlebih dahulu lalu simpan ke dalam array
+foreach ($data_normalisasi as &$row) {
+    $score = 0;
+    foreach ($bobot_input as $k => $b) {
+        $kolom = $kriteria_mapping[$k];
+        $score += $row[$kolom] * $bobot[$k];
+    }
+    $row['score'] = $score; // Tambahkan skor ke array
+}
+unset($row); // best practice setelah by-reference foreach
+
+// Urutkan berdasarkan skor tertinggi ke terendah
+usort($data_normalisasi, function($a, $b) {
+    return $b['score'] <=> $a['score'];
+});
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <title>Hasil Rekomendasi - DSS MAUT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="style.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    .form-range-custom {
+      max-width: 300px;
+    }
+  </style>
 </head>
-
 <body>
     <div id="sidebar-container">
         <div class="sidebar">
             <div class="sidebar-header">
-                <a href="index.php" class="text-white" style="text-decoration:none;"><i
-                        class="bi bi-house-door-fill"></i> Home</a>
+                <a href="index.php" class="text-white" style="text-decoration:none;"><i class="bi bi-house-door-fill"></i> Home</a>
             </div>
             <ul class="nav nav-pills flex-column">
-                <li class="nav-item"><a class="nav-link" href="index.php"><i
-                            class="bi bi-journal-text me-2"></i>Dokumentasi</a></li>
-                <li class="nav-item"><a class="nav-link active" href="rekomendasi.php"><i
-                            class="bi bi-lightbulb me-2"></i>Minta Rekomendasi</a></li>
-                <li class="nav-item"><a class="nav-link" href="rekomendasi-orang-lain.php"><i
-                            class="bi bi-people me-2"></i>Rekomendasi Orang Lain</a></li>
-                <li class="nav-item"><a class="nav-link" href="alternatif.php"><i class="bi bi-list-ul me-2"></i>Data
-                        Alternatif</a></li>
+                <li class="nav-item"><a class="nav-link" href="perhitungan.php"><i class="bi bi-journal-text me-2"></i>Proses perhitungan</a></li>
+                <li class="nav-item"><a class="nav-link" href="index.php"><i class="bi bi-journal-text me-2"></i>Dokumentasi</a></li>
+                <li class="nav-item"><a class="nav-link active" href="rekomendasi.php"><i class="bi bi-lightbulb me-2"></i>Minta Rekomendasi</a></li>
+                <li class="nav-item"><a class="nav-link" href="rekomendasi-orang-lain.php"><i class="bi bi-people me-2"></i>Rekomendasi Orang Lain</a></li>
+                <li class="nav-item"><a class="nav-link" href="alternatif.php"><i class="bi bi-list-ul me-2"></i>Data Alternatif</a></li>
             </ul>
         </div>
     </div>
-    
+
     <div class="main-content">
-        <div class="container mt-4">
-        <h2 class="mb-3">Tabel Normalisasi Alternatif</h2>
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nama</th>
-                    <?php foreach ($bobot_input as $key => $_): ?>
-                        <th><?= ucfirst(str_replace("_", " ", $key)) ?></th>
-                    <?php endforeach; ?>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($data_normalisasi as $row): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($row['id_alternatif']) ?></td>
-                        <td><?= htmlspecialchars($row['nama_makanan']) ?></td>
-                        <?php foreach ($bobot_input as $k => $_):
-                            $kolom = $kriteria_mapping[$k];
-                            ?>
-                            <td><?= number_format($row[$kolom], 4) ?></td>
-                        <?php endforeach; ?>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+    <div id="header-container">
+      <div class="topbar">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-list hamburger-menu" id="hamburgerToggle"></i>
+          <h5 class="mb-0">Proses Rekomendasi Orang Lain</h5>
         </div>
-        <div class="container mt-4">
-            <h2 class="mt-5 mb-3">Perhitungan Skor Akhir (MAUT)</h2>
-            <table class="table table-bordered">
+      </div>
+    </div>
+    <div class="container mt-4">
+    <h2 class="mb-3">Hasil Perhitungan DSS MAUT DARI ORANG LAIN</h2>
+
+    <div class="accordion" id="accordionHasilMAUT">
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                    Perhitungan Score Akhir (MAUT)
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionHasilMAUT">
+            <div class="accordion-body">
+                    <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -155,17 +183,61 @@ while ($row = mysqli_fetch_assoc($result)) {
                         ?>
                         <tr>
                             <td><?= $row['id_alternatif'] ?></td>
-                            <td><?= $row['nama_makanan'] ?></td>
+                            <td><?= htmlspecialchars($row['nama_makanan']) ?></td>
                             <td><strong><?= number_format($score, 4) ?></strong></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
 
-        <div class="container mt-4">
-            <h2 class="mt-5 mb-3">Bobot Kriteria</h2>
-            <table class="table table-bordered">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                    Tabel Normalisasi Alternatif
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionHasilMAUT">
+            <div class="accordion-body">
+                    <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                        <th>ID</th>
+                        <th>Nama</th>
+                            <?php foreach ($bobot_input as $key => $_): ?>
+                            <th><?= ucfirst(str_replace("_", " ", $key)) ?></th>
+                            <?php endforeach; ?>
+                        </tr>
+                        </thead>
+                        <tbody>
+                                <?php foreach ($data_normalisasi as $row): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['id_alternatif']) ?></td>
+                            <td><?= htmlspecialchars($row['nama_makanan']) ?></td>
+                            <?php foreach ($bobot_input as $k => $_):
+                                $kolom = $kriteria_mapping[$k];
+                                ?>
+                                <td><?= number_format($row[$kolom], 4) ?></td>
+                                <?php endforeach; ?>
+                            </tr>
+                                <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+    </div>
+</div>
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                    Bobot Kriteria (Awal dan Ternormalisasi)
+                </button>
+            </h2>
+            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionHasilMAUT">
+                <div class="accordion-body">
+                    <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Kriteria</th>
@@ -187,7 +259,6 @@ while ($row = mysqli_fetch_assoc($result)) {
             </table>
         </div>
     </div>
-
+    <script src="main.js"></script>
 </body>
-
 </html>

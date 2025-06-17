@@ -1,16 +1,20 @@
 <?php
-// koneksi ke database (ubah sesuai konfigurasi kamu)
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "food_dss";
+session_start();
+include 'connection.php';
 
-$conn = new mysqli($host, $user, $pass, $dbname);
-if ($conn->connect_error) {
-  die("Koneksi gagal: " . $conn->connect_error);
+// Generate CSRF token jika belum ada
+if (empty($_SESSION['csrf_token'])) {
+  $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
+
+  // Validasi token CSRF
+  if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    http_response_code(403);
+    exit('Token CSRF tidak valid.');
+  }
+
   $bobot = $_POST['bobot'];
 
   $sql = "INSERT INTO history_bobot (
@@ -39,15 +43,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
     $bobot['kelengkapan']
   );
 
-if ($stmt->execute()) {
-  echo "<form id='redirectForm' action='proses_rekomendasi.php' method='POST'>";
-  foreach ($bobot as $key => $val) {
-    echo "<input type='hidden' name='bobot[$key]' value='" . htmlspecialchars($val, ENT_QUOTES) . "'>";
+  if ($stmt->execute()) {
+    echo "<form id='redirectForm' action='proses_rekomendasi.php' method='POST'>";
+    echo "<input type='hidden' name='csrf_token' value='" . htmlspecialchars($_SESSION['csrf_token']) . "'>";
+    foreach ($bobot as $key => $val) {
+      echo "<input type='hidden' name='bobot[$key]' value='" . htmlspecialchars($val, ENT_QUOTES) . "'>";
+    }
+    echo "</form>";
+    echo "<script>document.getElementById('redirectForm').submit();</script>";
+    exit;
   }
-  echo "</form>";
-  echo "<script>document.getElementById('redirectForm').submit();</script>";
-  exit;
-}
 }
 ?>
 
@@ -72,17 +77,19 @@ if ($stmt->execute()) {
   </style>
 </head>
 <body>
+<?php $current = basename($_SERVER['PHP_SELF']); ?>
   <div id="sidebar-container">
     <div class="sidebar">
       <div class="sidebar-header">
         <a href="index.php" class="text-white" style="text-decoration:none;"><i class="bi bi-house-door-fill"></i> Home</a>
       </div>
-      <ul class="nav nav-pills flex-column">
-        <li class="nav-item"><a class="nav-link" href="index.php"><i class="bi bi-journal-text me-2"></i>Dokumentasi</a></li>
-        <li class="nav-item"><a class="nav-link active" href="rekomendasi.php"><i class="bi bi-lightbulb me-2"></i>Minta Rekomendasi</a></li>
-        <li class="nav-item"><a class="nav-link" href="rekomendasi-orang-lain.php"><i class="bi bi-people me-2"></i>Rekomendasi Orang Lain</a></li>
-        <li class="nav-item"><a class="nav-link" href="alternatif.php"><i class="bi bi-list-ul me-2"></i>Data Alternatif</a></li>
-      </ul>
+            <ul class="nav nav-pills flex-column">
+              <li class="nav-item"><a class="nav-link <?= $current == 'index.php' ? 'active' : '' ?>" href="index.php"><i class="bi bi-journal-text me-2"></i>Dokumentasi</a></li>
+                <li class="nav-item"><a class="nav-link <?= $current == 'perhitungan.php' ? 'active' : '' ?>" href="perhitungan.php"><i class="bi bi-journal-text me-2"></i>Proses perhitungan</a></li>
+                <li class="nav-item"><a class="nav-link <?= $current == 'rekomendasi.php' ? 'active' : '' ?>" href="rekomendasi.php"><i class="bi bi-lightbulb me-2"></i>Minta Rekomendasi</a></li>
+                <li class="nav-item"><a class="nav-link <?= $current == 'rekomendasi-orang-lain.php' ? 'active' : '' ?>" href="rekomendasi-orang-lain.php"><i class="bi bi-people me-2"></i>Rekomendasi Orang Lain</a></li>
+                <li class="nav-item"><a class="nav-link <?= $current == 'alternatif.php' ? 'active' : '' ?>" href="alternatif.php"><i class="bi bi-list-ul me-2"></i>Data Alternatif</a></li>
+            </ul>
     </div>
   </div>
   <div class="main-content">
@@ -99,6 +106,9 @@ if ($stmt->execute()) {
         <div class="card-body">
           <h3>Input Kriteria Rekomendasi</h3>
           <form action="" method="POST">
+            <!-- Tambahkan CSRF Token -->
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+
             <?php
             $kriteria = [
               'harga' => [

@@ -1,8 +1,7 @@
 <?php
-// Ganti konfigurasi sesuai server Anda
 $host = "localhost";
 $user = "root";
-$pass = ""; // Jika ada password MySQL, isi di sini
+$pass = ""; 
 $db   = "food_dss";
 
 $conn = mysqli_connect($host, $user, $pass, $db);
