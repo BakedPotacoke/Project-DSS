@@ -1,6 +1,7 @@
 <?php
 include 'connection.php'; // koneksi ke database
 
+<<<<<<< HEAD
 // Cegah XSS dan validasi input GET
 foreach ($_GET as $key => $value) {
     $_GET[$key] = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
@@ -26,6 +27,13 @@ foreach ($_GET as $key => $value) {
             die("Nilai bobot tidak valid.");
         }
 
+=======
+// Ambil bobot dari URL (GET)
+$bobot_input = [];
+foreach ($_GET as $key => $value) {
+    if (strpos($key, 'bobot_') === 0) {
+        $kriteria = substr($key, 6); // hapus 'bobot_'
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
         $bobot_input[$kriteria] = floatval($value);
     }
 }
@@ -41,7 +49,11 @@ foreach ($bobot_input as $k => $v) {
     $bobot[$k] = $total_bobot > 0 ? $v / $total_bobot : 0;
 }
 
+<<<<<<< HEAD
 // Mapping input ke kolom tabel
+=======
+// Mapping input ke kolom tabel (view_nilai_pivot)
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
 $kriteria_mapping = [
     'harga_makanan' => 'harga',
     'jarak' => 'jarak',
@@ -94,6 +106,7 @@ $data_normalisasi = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $data_normalisasi[] = $row;
 }
+<<<<<<< HEAD
 
 // Hitung skor terlebih dahulu lalu simpan ke dalam array
 foreach ($data_normalisasi as &$row) {
@@ -110,10 +123,13 @@ unset($row); // best practice setelah by-reference foreach
 usort($data_normalisasi, function($a, $b) {
     return $b['score'] <=> $a['score'];
 });
+=======
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
+<<<<<<< HEAD
 <head>
     <meta charset="UTF-8">
     <title>Hasil Rekomendasi - DSS MAUT</title>
@@ -127,10 +143,22 @@ usort($data_normalisasi, function($a, $b) {
     }
   </style>
 </head>
+=======
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hasil Rekomendasi - DSS MAUT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="style.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
 <body>
     <div id="sidebar-container">
         <div class="sidebar">
             <div class="sidebar-header">
+<<<<<<< HEAD
                 <a href="index.php" class="text-white" style="text-decoration:none;"><i class="bi bi-house-door-fill"></i> Home</a>
             </div>
             <ul class="nav nav-pills flex-column">
@@ -166,6 +194,55 @@ usort($data_normalisasi, function($a, $b) {
             <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionHasilMAUT">
             <div class="accordion-body">
                     <table class="table table-bordered table-hover">
+=======
+                <a href="index.php" class="text-white" style="text-decoration:none;"><i
+                        class="bi bi-house-door-fill"></i> Home</a>
+            </div>
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item"><a class="nav-link" href="index.php"><i
+                            class="bi bi-journal-text me-2"></i>Dokumentasi</a></li>
+                <li class="nav-item"><a class="nav-link active" href="rekomendasi.php"><i
+                            class="bi bi-lightbulb me-2"></i>Minta Rekomendasi</a></li>
+                <li class="nav-item"><a class="nav-link" href="rekomendasi-orang-lain.php"><i
+                            class="bi bi-people me-2"></i>Rekomendasi Orang Lain</a></li>
+                <li class="nav-item"><a class="nav-link" href="alternatif.php"><i class="bi bi-list-ul me-2"></i>Data
+                        Alternatif</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="container mt-4">
+        <h2 class="mb-3">Tabel Normalisasi Alternatif</h2>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <?php foreach ($bobot_input as $key => $_): ?>
+                        <th><?= ucfirst(str_replace("_", " ", $key)) ?></th>
+                    <?php endforeach; ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($data_normalisasi as $row): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['id_alternatif']) ?></td>
+                        <td><?= htmlspecialchars($row['nama_makanan']) ?></td>
+                        <?php foreach ($bobot_input as $k => $_):
+                            $kolom = $kriteria_mapping[$k];
+                            ?>
+                            <td><?= number_format($row[$kolom], 4) ?></td>
+                        <?php endforeach; ?>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        </div>
+        <div class="container mt-4">
+            <h2 class="mt-5 mb-3">Perhitungan Skor Akhir (MAUT)</h2>
+            <table class="table table-bordered">
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -183,13 +260,18 @@ usort($data_normalisasi, function($a, $b) {
                         ?>
                         <tr>
                             <td><?= $row['id_alternatif'] ?></td>
+<<<<<<< HEAD
                             <td><?= htmlspecialchars($row['nama_makanan']) ?></td>
+=======
+                            <td><?= $row['nama_makanan'] ?></td>
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
                             <td><strong><?= number_format($score, 4) ?></strong></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
+<<<<<<< HEAD
     </div>
 </div>
 
@@ -238,6 +320,12 @@ usort($data_normalisasi, function($a, $b) {
             <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionHasilMAUT">
                 <div class="accordion-body">
                     <table class="table table-bordered">
+=======
+
+        <div class="container mt-4">
+            <h2 class="mt-5 mb-3">Bobot Kriteria</h2>
+            <table class="table table-bordered">
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
                 <thead>
                     <tr>
                         <th>Kriteria</th>
@@ -259,6 +347,13 @@ usort($data_normalisasi, function($a, $b) {
             </table>
         </div>
     </div>
+<<<<<<< HEAD
     <script src="main.js"></script>
 </body>
 </html>
+=======
+
+</body>
+
+</html>
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c

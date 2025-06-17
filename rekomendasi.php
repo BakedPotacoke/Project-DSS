@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 session_start();
 include 'connection.php';
 
@@ -15,6 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
     exit('Token CSRF tidak valid.');
   }
 
+=======
+include 'connection.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
   $bobot = $_POST['bobot'];
 
   $sql = "INSERT INTO history_bobot (
@@ -43,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
     $bobot['kelengkapan']
   );
 
+<<<<<<< HEAD
   if ($stmt->execute()) {
     echo "<form id='redirectForm' action='proses_rekomendasi.php' method='POST'>";
     echo "<input type='hidden' name='csrf_token' value='" . htmlspecialchars($_SESSION['csrf_token']) . "'>";
@@ -53,6 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
     echo "<script>document.getElementById('redirectForm').submit();</script>";
     exit;
   }
+=======
+if ($stmt->execute()) {
+  echo "<form id='redirectForm' action='proses_rekomendasi.php' method='POST'>";
+  foreach ($bobot as $key => $val) {
+    echo "<input type='hidden' name='bobot[$key]' value='" . htmlspecialchars($val, ENT_QUOTES) . "'>";
+  }
+  echo "</form>";
+  echo "<script>document.getElementById('redirectForm').submit();</script>";
+  exit;
+}
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
 }
 ?>
 
@@ -77,12 +95,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
   </style>
 </head>
 <body>
+<<<<<<< HEAD
 <?php $current = basename($_SERVER['PHP_SELF']); ?>
+=======
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
   <div id="sidebar-container">
     <div class="sidebar">
       <div class="sidebar-header">
         <a href="index.php" class="text-white" style="text-decoration:none;"><i class="bi bi-house-door-fill"></i> Home</a>
       </div>
+<<<<<<< HEAD
             <ul class="nav nav-pills flex-column">
               <li class="nav-item"><a class="nav-link <?= $current == 'index.php' ? 'active' : '' ?>" href="index.php"><i class="bi bi-journal-text me-2"></i>Dokumentasi</a></li>
                 <li class="nav-item"><a class="nav-link <?= $current == 'perhitungan.php' ? 'active' : '' ?>" href="perhitungan.php"><i class="bi bi-journal-text me-2"></i>Proses perhitungan</a></li>
@@ -90,6 +112,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
                 <li class="nav-item"><a class="nav-link <?= $current == 'rekomendasi-orang-lain.php' ? 'active' : '' ?>" href="rekomendasi-orang-lain.php"><i class="bi bi-people me-2"></i>Rekomendasi Orang Lain</a></li>
                 <li class="nav-item"><a class="nav-link <?= $current == 'alternatif.php' ? 'active' : '' ?>" href="alternatif.php"><i class="bi bi-list-ul me-2"></i>Data Alternatif</a></li>
             </ul>
+=======
+      <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.php"><i class="bi bi-journal-text me-2"></i>Dokumentasi</a></li>
+        <li class="nav-item"><a class="nav-link active" href="rekomendasi.php"><i class="bi bi-lightbulb me-2"></i>Minta Rekomendasi</a></li>
+        <li class="nav-item"><a class="nav-link" href="rekomendasi-orang-lain.php"><i class="bi bi-people me-2"></i>Rekomendasi Orang Lain</a></li>
+        <li class="nav-item"><a class="nav-link" href="alternatif.php"><i class="bi bi-list-ul me-2"></i>Data Alternatif</a></li>
+      </ul>
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
     </div>
   </div>
   <div class="main-content">
@@ -106,9 +136,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bobot'])) {
         <div class="card-body">
           <h3>Input Kriteria Rekomendasi</h3>
           <form action="" method="POST">
+<<<<<<< HEAD
             <!-- Tambahkan CSRF Token -->
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
 
+=======
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
             <?php
             $kriteria = [
               'harga' => [

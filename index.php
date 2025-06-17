@@ -15,7 +15,10 @@
       </div>
       <ul class="nav nav-pills flex-column">
         <li class="nav-item"><a class="nav-link active" href="index.php"><i class="bi bi-journal-text me-2"></i>Dokumentasi</a></li>
+<<<<<<< HEAD
          <li class="nav-item"><a class="nav-link" href="perhitungan.php"><i class="bi bi-journal-text me-2"></i>Proses perhitungan</a></li>
+=======
+>>>>>>> fbb9d23f5db789eb218d481d30a029b5afd5da8c
         <li class="nav-item"><a class="nav-link" href="rekomendasi.php"><i class="bi bi-lightbulb me-2"></i>Minta Rekomendasi</a></li>
         <li class="nav-item"><a class="nav-link" href="rekomendasi-orang-lain.php"><i class="bi bi-people me-2"></i>Rekomendasi Orang Lain</a></li>
         <li class="nav-item"><a class="nav-link" href="alternatif.php"><i class="bi bi-list-ul me-2"></i>Data Alternatif</a></li>
